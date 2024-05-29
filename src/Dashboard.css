@@ -1,0 +1,20 @@
+.site-layout {
+    margin-left: 80px;
+    transition: margin-left 0.3s;
+  }
+  
+  .site-layout .site-layout-background {
+    background: #fff;
+  }
+  
+  .menu-item {
+    display: flex;
+    align-items: center;
+  }
+  
+  .demo-logo-vertical {
+    height: 32px;
+    background: rgba(255, 255, 255, 0.2);
+    margin: 16px;
+  }
+  

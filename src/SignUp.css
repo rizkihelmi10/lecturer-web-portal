@@ -1,0 +1,26 @@
+.signup-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.image-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-blend-mode:linear-gradient;
+}
+
+.signup-image {
+  max-width: 80%;
+  height: auto;
+}
+
+.form-container {
+  flex: 1;
+  display: fill;
+  justify-content: center;
+  align-items: center;
+}

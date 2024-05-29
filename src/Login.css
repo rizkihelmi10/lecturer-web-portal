@@ -1,0 +1,31 @@
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.image-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-image {
+  max-width: 100%;
+  height: auto;
+}
+
+.form-container {
+  flex: 1;
+  display: fill;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.signup-link {
+  margin-top: 10px;
+  text-align: center;
+}

@@ -9,6 +9,8 @@ import { getAuth, signOut } from 'firebase/auth';
 import { DemoLine } from './DemoLine';
 import { useEffect } from 'react';
 import {  onAuthStateChanged } from 'firebase/auth';
+import studentImage from './student.png';
+import ModelEvaluation from './ModelEvaluation';
 
 const { Header, Sider, Content } = Layout;
 
@@ -62,16 +64,18 @@ const Dashboard = () => {
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sider trigger={null} collapsible collapsed={collapsed}>
-        <div className="demo-logo-vertical" />
+        <div className="demo-logo-vertical">
+        <img src={studentImage} alt="Dashboard" className="demo-logo-vertical" />
+        </div>
         <Menu theme="dark" mode="inline" selectedKeys={[activeNav]}>
           <Menu.Item key="1" icon={<UserOutlined />} className="menu-item" onClick={() => handleNavClick('1')}>
-            Nav 1
+            Student Table
           </Menu.Item>
           <Menu.Item key="2" icon={<VideoCameraOutlined />} className="menu-item" onClick={() => handleNavClick('2')}>
-            Nav 2
+            Analytics
           </Menu.Item>
           <Menu.Item key="3" icon={<UploadOutlined />} className="menu-item" onClick={() => handleNavClick('3')}>
-            Nav 3
+            Model Evaluation
           </Menu.Item>
         </Menu>
       </Sider>
@@ -109,9 +113,9 @@ const Dashboard = () => {
 
         <Content className="site-layout-background" style={{ margin: '24px 16px', padding: 24, minHeight: 280 }}>
 
-          {activeNav === '1' && <div><TableStudent lecturerName={userName}/></div>}
+          {activeNav === '1' && <div><TableStudent lecturerName={userName} /></div>}
           {activeNav === '2' && <div><DemoLine /></div>}
-          {activeNav === '3' && <div>Content for Nav 3</div>}
+          {activeNav === '3' && <div><ModelEvaluation/></div>}
         </Content>
 
       </Layout>

@@ -7,6 +7,7 @@ import { auth } from './FireBaseConfig';
 import { useNavigate } from 'react-router-dom';
 import React, { useEffect } from'react';
 import AuthStateListener from './AuthStateListener';
+import UpdateProfile from './UpdateProfile';
 
 function App() {
   
@@ -18,6 +19,7 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/updateprofile" element={<UpdateProfile/>} />
       </Routes>
     </BrowserRouter>
   );

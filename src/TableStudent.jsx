@@ -279,7 +279,7 @@ const TableStudent = () => {
               "Course Type": courseData.courseType,
               "Predicted Final Grade": (courseData.predictedScore || 0).toFixed(2),
               "Predicted Final Exam": (courseData.predictedFinal || 0).toFixed(2),
-              "Coursework": courseData.coursework,
+              "Coursework": (courseData.coursework|| 0).toFixed(2),
               "Assessments": assessments,
               Name: userName,
               "Advice": message, 

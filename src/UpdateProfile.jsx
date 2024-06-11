@@ -116,7 +116,6 @@ const UpdateProfile = () => {
             </Form.Item>
 
             <Form.Item
-              name="numCourses"
               label="Number of Courses Taught"
               rules={[
                 {

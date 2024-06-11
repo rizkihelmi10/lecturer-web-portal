@@ -121,12 +121,12 @@ export const DemoLine = () => {
       shape: 'square',
       size: 4,
     },
-    tooltip: {
-      formatter: (data) => {
-        const grade = getGrade(data.score);
-        return { name: data.assessment, value: `${data.score} (${grade})` };
-      },
-    },
+    // tooltip: {
+    //   formatter: (data) => {
+    //     const grade = getGrade(data.score);
+    //     return { name: data.assessment, value: `${data.score} (${grade})` };
+    //   },
+    // },
     style: {
       lineWidth: 2,
     },

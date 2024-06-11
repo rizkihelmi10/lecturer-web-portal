@@ -17,7 +17,7 @@ const ModelAccuracyTrend = () => {
       if (user) {
         const lecturerName = user.displayName;
         setUserData(user);
-        await fetchAccuracyData(lecturerName);
+        await fetchAccuracyData(user);
       } else {
         setError("User not authenticated.");
         setIsLoading(false);
@@ -27,7 +27,9 @@ const ModelAccuracyTrend = () => {
     return () => unsubscribe();
   }, []);
 
-  const fetchAccuracyData = async (lecturerName) => {
+  console.log(userData);
+
+  const fetchAccuracyData = async (user) => {
     setIsLoading(true);
     setError(null);
   
@@ -38,26 +40,26 @@ const ModelAccuracyTrend = () => {
       // Modify the query
       const accuracyQuery = query(
         modelAccuracyCollectionRef, 
-        where("uid", "==", userData.uid),
-        orderBy("timestamp", "asc")
+        where("lecturerId", "==", user.uid),
+        // orderBy("lastUpdated", "asc")
       );
   
-      console.log("Fetching accuracy data for lecturer:", lecturerName);
+    //   console.log("Fetching accuracy data for lecturer:", lecturerName);
       const accuracySnapshot = await getDocs(accuracyQuery);
   
       if (!accuracySnapshot.empty) {
         const accuracyEntries = accuracySnapshot.docs.map((doc, index) => {
           const data = doc.data();
           return {
-            index: index + 1,
+            // index: index + 1,
             accuracy: data.accuracy,
-            timestamp: data.timestamp.toDate().toLocaleDateString(),
+            lastUpdated: data.lastUpdated.toDate().toLocaleString(),
           };
         });
         setAccuracyData(accuracyEntries);
         console.log("Accuracy Data:", accuracyEntries);
       } else {
-        setError(`No accuracy data found for lecturer "${lecturerName}".`);
+        setError(`No accuracy data found for lecturer`);
       }
     } catch (error) {
       console.error("Error fetching accuracy data: ", error);
@@ -69,18 +71,18 @@ const ModelAccuracyTrend = () => {
 
   const config = {
     data: accuracyData,
-    xField: 'index',
+    xField: 'lastUpdated',
     yField: 'accuracy',
     point: {
       shape: 'circle',
       size: 5,
     },
-    tooltip: {
-      formatter: (data) => ({
-        name: 'Accuracy',
-        value: `${data.accuracy.toFixed(2)}% (${data.timestamp})`,
-      }),
-    },
+    // tooltip: {
+    //   formatter: (data) => ({
+    //     name: 'Accuracy',
+    //     value: data.accuracy,
+    //   }),
+    // },
     style: {
       lineWidth: 2,
     },

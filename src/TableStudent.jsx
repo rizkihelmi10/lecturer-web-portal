@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import { Space, Table, Tag, Button, Typography } from 'antd';
+import { Space, Table, Tag, Button, Typography, Flex } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { app } from './FireBaseConfig';
 import { getFirestore, collection, query, where, getDocs, addDoc, doc } from 'firebase/firestore';
@@ -299,11 +299,11 @@ const TableStudent = () => {
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  // if (isLoading) return <div>Loading...</div>;
+  // if (error) return <div>Error: {error}</div>;
   return (
     <div>
-      {data.length === 0 ? (
+      {/* {data.length === 0 ? (
         <div style={{ textAlign: 'center', marginTop: '20px' }}>
           <Text>No data available for the submitted courses</Text>
           <br />
@@ -315,7 +315,16 @@ const TableStudent = () => {
         <>
           <Table columns={columns} dataSource={data} />
         </>
-      )}
+      )} */}
+      <Flex vertical justify='center' gap={20}>
+      <Table columns={columns} dataSource={data} />
+        <div style={{ textAlign: 'center', marginTop: '20px' }}>
+            <Button type="primary" onClick={() => navigate('/UpdateProfile')}>
+              Update Courses
+            </Button>
+          </div>
+      </Flex>
+
     </div>
   );
 };

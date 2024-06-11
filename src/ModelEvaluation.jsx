@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Select, Input, Button, Table, Typography, message } from 'antd';
-import { getFirestore, collection, query, where, getDocs, doc, setDoc, getDoc } from 'firebase/firestore';
+import { getFirestore, collection, query, where, getDocs, doc, setDoc, getDoc, addDoc } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { app } from './FireBaseConfig';
 
@@ -10,7 +10,7 @@ const { Text } = Typography;
 const ModelEvaluation = () => {
   const [submittedCourses, setSubmittedCourses] = useState([]);
   const [students, setStudents] = useState([]);
-  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [selectedCourse, setSelectedCourse] = useState(null);
   const [studentCourses, setStudentCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -33,7 +33,9 @@ const ModelEvaluation = () => {
 
     return () => unsubscribe();
   }, []);
-console.log(userData);
+
+  console.log(userData);
+
   const fetchSubmittedCourses = async (lecturerName) => {
     try {
       const db = getFirestore(app);
@@ -84,22 +86,33 @@ console.log(userData);
     }
   };
 
-  const handleStudentChange = async (studentId) => {
-    setSelectedStudent(studentId);
+  const handleCourseChange = async (courseCode) => {
+    setSelectedCourse(courseCode);
     try {
       const db = getFirestore(app);
-      const coursesCollectionRef = collection(db, `users/${studentId}/courses`);
-      const coursesSnapshot = await getDocs(coursesCollectionRef);
+      const usersCollectionRef = collection(db, "users");
+      const usersSnapshot = await getDocs(usersCollectionRef);
 
-      const courses = coursesSnapshot.docs
-        .filter(doc => submittedCourses.includes(doc.data().courseCode))
-        .map(doc => ({
-          ...doc.data(),
-          id: doc.id,
-          actualGrade: '',
-        }));
+      const studentCourses = [];
+      for (const userDoc of usersSnapshot.docs) {
+        const coursesCollectionRef = collection(userDoc.ref, 'courses');
+        const coursesSnapshot = await getDocs(coursesCollectionRef);
 
-      setStudentCourses(courses);
+        for (const courseDoc of coursesSnapshot.docs) {
+          const courseData = courseDoc.data();
+          if (courseData.courseCode === courseCode) {
+            studentCourses.push({
+              ...courseData,
+              id: courseDoc.id,
+              studentId: userDoc.id,
+              studentName: userDoc.data().name,
+              actualGrade: '',
+            });
+          }
+        }
+      }
+
+      setStudentCourses(studentCourses);
     } catch (error) {
       console.error("Error fetching student courses: ", error);
       setError("An error occurred while fetching student courses.");
@@ -107,28 +120,16 @@ console.log(userData);
   };
 
   const handleGradeChange = (courseId, value) => {
-    setStudentCourses(prev => prev.map(course => 
-      course.id === courseId ? { ...course, actualGrade: value } : course
-    ));
+    setStudentCourses(prev =>
+      prev.map(course =>
+        course.id === courseId ? { ...course, actualGrade: value } : course
+      )
+    );
   };
-//   useEffect(() => {
-//     const auth = getAuth(app);
-//     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-//       if (user) {
-//         const lecturerId = user.uid;
-//       } else {
-//         setError("User not authenticated.");
-//         setIsLoading(false);
-//       }
-//     });
-
-//     return () => unsubscribe();
-//   }, []);
 
   const calculateAndSaveAccuracy = async () => {
     let totalError = 0;
     let count = 0;
-    
 
     studentCourses.forEach(course => {
       if (course.actualGrade !== '') {
@@ -148,45 +149,35 @@ console.log(userData);
     const accuracy = 100 - meanAbsoluteError;
 
     try {
-      const db = getFirestore(app);
-      const modelAccuracyRef = doc(db, "modelAccuracy", userData.uid);
-      const modelAccuracyDoc = await getDoc(modelAccuracyRef);
-
-      let updatedAccuracy;
-      if (modelAccuracyDoc.exists()) {
-        const currentAccuracy = modelAccuracyDoc.data().accuracy;
-        const currentCount = modelAccuracyDoc.data().count;
-        updatedAccuracy = (currentAccuracy * currentCount + accuracy) / (currentCount + 1);
-      } else {
-        updatedAccuracy = accuracy;
+        const db = getFirestore(app);
+        const modelAccuracyCollectionRef = collection(db, "modelAccuracy");
+    
+        const modelAccuracyDoc = await addDoc(modelAccuracyCollectionRef, {
+          accuracy: accuracy,
+          lastUpdated: new Date(),
+          lecturerId: userData.uid,
+        });
+    
+        message.success(`Model accuracy updated: ${accuracy.toFixed(2)}%`);
+      } catch (error) {
+        console.error("Error saving model accuracy: ", error);
+        message.error("An error occurred while saving model accuracy.");
       }
-
-      await setDoc(modelAccuracyRef, {
-        accuracy: updatedAccuracy,
-        count: (modelAccuracyDoc.exists() ? modelAccuracyDoc.data().count : 0) + 1,
-        lastUpdated: new Date(),
-        uid : userData.uid,
-      }, { merge: true });
-
-      message.success(`Model accuracy updated: ${updatedAccuracy.toFixed(2)}%`);
-    } catch (error) {
-      console.error("Error saving model accuracy: ", error);
-      message.error("An error occurred while saving model accuracy.");
-    }
   };
 
   const columns = [
+    { title: 'Student Name', dataIndex: 'studentName', key: 'studentName' },
     { title: 'Course Code', dataIndex: 'courseCode', key: 'courseCode' },
     { title: 'Predicted Grade', dataIndex: 'predictedScore', key: 'predictedScore', render: val => val.toFixed(2) },
-    { 
-      title: 'Actual Grade', 
-      dataIndex: 'actualGrade', 
+    {
+      title: 'Actual Grade',
+      dataIndex: 'actualGrade',
       key: 'actualGrade',
       render: (val, record) => (
-        <Input 
-          value={val} 
-          onChange={e => handleGradeChange(record.id, e.target.value)} 
-          type="number" 
+        <Input
+          value={val}
+          onChange={e => handleGradeChange(record.id, e.target.value)}
+          type="number"
           step="0.01"
         />
       ),
@@ -199,27 +190,27 @@ console.log(userData);
   return (
     <div style={{ maxWidth: 800, margin: 'auto', padding: 20 }}>
       <h1>Model Evaluation</h1>
-      <Select 
+      <Select
         style={{ width: '100%', marginBottom: 20 }}
-        placeholder="Select a student"
-        onChange={handleStudentChange}
+        placeholder="Select a course"
+        onChange={handleCourseChange}
       >
-        {students.map(student => (
-          <Option key={student.id} value={student.id}>{student.name} ({student.id})</Option>
+        {submittedCourses.map(course => (
+          <Option key={course} value={course}>{course}</Option>
         ))}
       </Select>
 
-      {selectedStudent && (
+      {selectedCourse && (
         <>
-          <Table 
-            dataSource={studentCourses} 
-            columns={columns} 
+          <Table
+            dataSource={studentCourses}
+            columns={columns}
             rowKey="id"
             pagination={false}
           />
-          <Button 
-            type="primary" 
-            onClick={calculateAndSaveAccuracy} 
+          <Button
+            type="primary"
+            onClick={calculateAndSaveAccuracy}
             style={{ marginTop: 20 }}
           >
             Calculate and Save Model Accuracy
